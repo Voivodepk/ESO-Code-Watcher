@@ -13,7 +13,7 @@ from urllib.parse import urljoin, urlparse
 
 STATE = Path("seen_articles.json")
 ATOM = "{http://www.w3.org/2005/Atom}"
-OFFICIAL_URL = "https://www.elderscrollsonline.com/en-us/news"
+OFFICIAL_URL = "https://www.elderscrollsonline.com/en-us/ajax/archive/all/?page=2"
 PATTERN = re.compile(r"\b(code|codes|redeem|redemption|giveaway|free rewards?|claim.*rewards?)\b", re.I)
 
 def fetch(url):
@@ -117,7 +117,7 @@ def main():
             print(f"WARNING: {name} unavailable: {type(exc).__name__}: {exc}")
             continue
         sources_ok += 1
-        print(f"{name}: found {len(articles)} articles")
+        print(f"{name}: found {len(articles)} articles")\n        if name == "official" and not articles:\n            print("WARNING: Official ESO archive returned no matching article links; verify markup/access")
         marker = "initialized:" + name
         if marker not in seen:
             seen.update(key for key, _, _ in articles)
