@@ -13,7 +13,7 @@ from urllib.parse import urljoin, urlparse
 
 STATE = Path("seen_articles.json")
 ATOM = "{http://www.w3.org/2005/Atom}"
-OFFICIAL_URL = "https://www.elderscrollsonline.com/en-us/ajax/archive/all/?page=2"
+OFFICIAL_URL = "https://www.elderscrollsonline.com/en-us/ajax/archive/all/?page=1"
 PATTERN = re.compile(r"\b(code|codes|redeem|redemption|giveaway|free rewards?|claim.*rewards?)\b", re.I)
 
 def fetch(url):
@@ -89,7 +89,7 @@ def send(webhook, title, link):
                f"🔗 {link}\n"
                "⚠️ Unverified announcement: check the source for redemption details.")
     payload = json.dumps({"content": message, "allowed_mentions": {"parse": []}}).encode()
-    req = urllib.request.Request(webhook, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+    req = urllib.request.Request(webhook, data=payload, headers={"Content-Type": "application/json", "User-Agent": "ESO-Code-Watcher/1.0"}, method="POST")
     with urllib.request.urlopen(req, timeout=25) as response:
         if response.status not in (200, 204):
             raise RuntimeError(f"Discord returned HTTP {response.status}")
@@ -121,7 +121,7 @@ def main():
         if name == "official" and not articles:
             print("WARNING: Official ESO archive returned no matching article links; verify markup/access")
         marker = "initialized:" + name
-        if marker not in seen:
+        if marker not in seen or (name == "official" and not any(k.startswith("official:") for k in seen)):
             seen.update(key for key, _, _ in articles)
             seen.add(marker)
             print(f"{name}: initial baseline recorded; no historical posts")
