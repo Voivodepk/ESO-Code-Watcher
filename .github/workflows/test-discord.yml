@@ -1,0 +1,48 @@
+name: Test ESO Discord Webhook
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-discord:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Send one Discord test message
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          import urllib.error
+          import sys
+
+          url = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
+          if not url.startswith("https://"):
+              sys.exit("Webhook secret missing or invalid HTTPS URL")
+          payload = json.dumps({
+              "content": "🐉 ESO Code Watcher: GitHub Actions webhook connection test successful!",
+              "allowed_mentions": {"parse": []}
+          }).encode("utf-8")
+          request = urllib.request.Request(
+              url,
+              data=payload,
+              headers={"Content-Type": "application/json", "User-Agent": "ESO-Code-Watcher/1.0"},
+              method="POST"
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  print(f"Discord accepted test message (HTTP {response.status})")
+          except urllib.error.HTTPError as exc:
+              print(f"Discord rejected test message (HTTP {exc.code})")
+              # Never print response body or URL; webhook URL is a secret.
+              sys.exit(1)
+          except Exception as exc:
+              print(f"Connection error: {type(exc).__name__}")
+              sys.exit(1)
+          PY
