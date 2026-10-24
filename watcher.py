@@ -117,7 +117,9 @@ def main():
             print(f"WARNING: {name} unavailable: {type(exc).__name__}: {exc}")
             continue
         sources_ok += 1
-        print(f"{name}: found {len(articles)} articles")\n        if name == "official" and not articles:\n            print("WARNING: Official ESO archive returned no matching article links; verify markup/access")
+        print(f"{name}: found {len(articles)} articles")
+        if name == "official" and not articles:
+            print("WARNING: Official ESO archive returned no matching article links; verify markup/access")
         marker = "initialized:" + name
         if marker not in seen:
             seen.update(key for key, _, _ in articles)
